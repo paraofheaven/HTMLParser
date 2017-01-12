@@ -1,7 +1,7 @@
 /*
 HTMLParser By Para Yong
 http://ejohn.org/files/htmlparser.js
-//useage:
+useage:
 
 HTMLParser(htmlString,{
 	start:function(tag,attrs,unary){},
@@ -17,11 +17,21 @@ HTMLtoDOM(htmlString,docuement.querySelector(".selector"))
 */
 
 
-
 (function(){
 	//Regular Expresssions for parsing tags and attributes
-	var startTag =/^<([-A-Za-z0-9_]+)((?:\s+\w+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*) \s*(\/?)>/,
+
+	// 这个正则返回几个参数：
+	// 1：匹配到的完整项
+	// 2：匹配到的第一，第二。。。项（正则中以()划分）
+	// 3：example: <div class="remain">  div class="remain" ""
+	var startTag =/^<([-A-Za-z0-9_]+)((?:\s+\w+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>/,
+
+	// 这个正则返回几个参数：
+	// example: </div> div 
 		endTag =/^<\/([-A-Za-z0-9_]+)[^>]*>/,
+
+	// 这个正则返回几个参数：
+	// example: class='homeIndex pis' class homeIndex&pis
 		attr =/([-A-Za-z0-9_]+)(?:\s*=\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+)))?/g;
 
 	// Empty Elements - HTML 4.0.1
@@ -62,7 +72,7 @@ HTMLtoDOM(htmlString,docuement.querySelector(".selector"))
 				else if (html.indexOf("</")==0){
 					match =html.match(endTag);
 					if(match){
-						html.substring(match[0].length);
+						html =html.substring(match[0].length);
 						match[0].replace(endTag,parseEndTag);
 						chars=false;
 					}
@@ -84,8 +94,60 @@ HTMLtoDOM(htmlString,docuement.querySelector(".selector"))
 						handler.chars(text)
 					}
 				}
+			}else {
+				html = html.replace(new RegExp("(.*)<\/" + stack.last() + "[^>]*>"),function(all,text){
+					text =text.replace(/<--(.*?)-->/g,"$1")
+							.replace(/<!\[CDATA\[(.*?)]]>/g,"$1");
+					if(handler.chars){
+						handler.chars(text);
+					}
+					return "";
+				});
+				parseEndTag("",stack.last());
+			}
+			if(html == last ){
+				throw "Parse Error: " + html;
+			}
+			last = html;
+		}
+		// Clean up any remaining tags
+		parseEndTag();
+
+		function parseStartTag(tag,tagName,rest,unary){
+			tagName =tagName.toLowerCase();
+
+			if(block[tagName]){
+				while(stack.last() && inline[stack.last()]){
+					parseEndTag("",stack.last());
+				}
+			}
+			if(closeSelf[tagName] && stack.last() == tagName){
+				parseEndTag("",tagName);
+			}
+			unary =empty[tagName] || !!unary;
+
+			if(!unary){
+				stack.push(tagName);
+			}
+			if(handler.start){
+				var attrs =[];
+				rest.replace(attr,function(match,name){
+					var value=arguments[2] ? arguments[2]:
+						arguments[3] ? arguments[3] :
+						arguments[4] ? arguments[4] :
+						fillAttrs[name] ? name : '';
+					attrs.push({
+						name:name,
+						value:value,
+						escaped: value.replace(/(^|[^\\])"/g,'$1\\\"')
+					})
+				});
+				if(handler.start){
+					handler.start(tagName,attrs,unary);
+				}
 			}
 		}
+
 		function parseEndTag(tag,tagName){
 			// if no tag name is provide,clean shop
 			if(!tagName){
@@ -108,8 +170,97 @@ HTMLtoDOM(htmlString,docuement.querySelector(".selector"))
 				}
 				stack.length =pos;
 			}
-			
 		}
+	};
+
+	this.HTMLtoDOM =function(html,doc){
+		//There can be only one of these elements
+		var one = makeMap("html,head,body,title");
+
+		// Enforce a structure for the document
+		var structure ={
+			link:'head',
+			base:'head'
+		};
+		if(!doc){
+			// for XML
+			// if(typeof DOMDocument !="undefined"){
+			// 	doc =new DOMDocument();
+			// }else 
+			if(typeof document != "undefined" && document.implementation && document.implementation.createDocument){
+				doc = document.implementation.createDocument("","",null);
+			}else if(typeof ActiveX !="undefined"){
+				doc = new ActiveXObject("Msxml.DOMDocument");
+			}
+		}else{
+			doc = doc.ownerDocument || 
+					doc.getOwnerDocument && doc.getOwnerDocument() ||
+					doc;
+		}
+		var elems=[],
+			documentElement =doc.documentElement ||
+				doc.getDocumentElement && doc.getDocumentElement();
+		// If we're dealing with an empty document then we
+		// need to pre-populate it with the HTML document structure
+		if(!documentElement && doc.createElement){
+			(function(){
+				var html =doc.createElement("html");
+				var head =doc.createElement("head");
+				head.appendChild(doc.createElement("title"));
+				html.appendChild(head);
+				html.appendChild(doc.createElement("body"));
+				doc.appendChild(html);
+			})();
+		}
+		// Find all the unique elements
+		if(doc.getElementsByTagName){
+			for(var i in one){
+				one[i] = doc.getElementsByTagName(i)[0];
+			}
+		}
+		// if we're working with a document ,inject contents into body element
+		var curParentNode =one.body;
+
+		HTMLParser(html,{
+			start:function(tagName,attrs,unary){
+				// if it's a pre-build element ,then we can ignore its construction
+				if(one[tagName]){
+					curParentNode  =one[tagName];
+					if(!unary){
+						elems.push(curParentNode);
+					}
+					return;
+				}
+				var elem =doc.createElement(tagName);
+				for(var attr in attrs){
+					elem.setAttribute(attrs[attr].name,attrs[attr].value);
+				}
+				if(structure[tagName] && typeof(one[structure[tagName]] != "boolean") ){
+					one[structure[tagName]].appendChild(elem);
+				}
+				else if (curParentNode && curParentNode.appendChild){
+					curParentNode.appendChild(elem);
+				}
+				if(!unary){
+					elems.push(elem);
+					curParentNode =elem
+				}
+			},
+			end:function(tag){
+				elems.length -=1;
+
+				//Init the new parentNode
+				curParentNode =elems [elems.length -1];
+			},
+			chars:function(text){
+				curParentNode.appendChild(doc.createTextNode(text))
+			},
+			comment:function(text){
+				// create comment node
+			}
+		});
+
+		return doc;
 	}
 
 	function makeMap(str){
@@ -120,4 +271,4 @@ HTMLtoDOM(htmlString,docuement.querySelector(".selector"))
 		return obj;
 	}
 
-})
+})();

@@ -3,13 +3,30 @@
 <head>
 	<meta charset="utf-8">
 	<title>HTMLparser</title>
-	<script type="text/javascript" src="./htmlparser.js"></script>
+	<script type="text/javascript" src="../htmlparser.js"></script>
 </head>
 <body>
 	<div class="demo itemwrapper" id="demo" v-model="demo" v-for="items">
-		<img src="" />
-		<p>this is htmlparser example.</p>
+
 	</div>
 
+<script type="text/javascript">
+	var htmlString= '<!-- this is the example-->'+
+				'<div class="recommend his">'+
+                    '<ul>'+
+                    	'<p>'+'aaaa'+
+                    	'<p>'+'bbb'+
+                    	'</p>'+
+                    	'</p>'+
+                    	'aaa'+
+                    	'<style>'+'<--this is css-->.style {position:relative;}'+
+                    	'</style>'+
+                        '<a href="/market/index" target="_blank">'+
+                        '<br/>'+
+                        '</a>'+
+                    '</ul>'+
+                '</div>';
+        HTMLtoDOM(htmlString,document);
+</script>
 </body>
 </html>
