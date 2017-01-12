@@ -1,6 +1,5 @@
 /*
 HTMLParser By Para Yong
-http://ejohn.org/files/htmlparser.js
 useage:
 
 HTMLParser(htmlString,{
