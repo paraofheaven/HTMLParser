@@ -1,0 +1,36 @@
+{
+  "name": "htmlparser",
+  "version": "1.0.0",
+  "description": "a html string to Dom plugin",
+  "main": "webpack.config.js",
+  "scripts": {
+    "init": "webpack --progress --config webpack.config.js",
+    "dev": "webpack-dev-server --inline --hot --compress --history-api-fallback --config webpack.config.js",
+    "build": "webpack --progress --hide-modules --config webpack.prod.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paraofheaven/HTMLParser.git"
+  },
+  "devDependencies":{
+    "autoprefixer-loader": "^2.0.0",
+    "babel": "^6.3.13",
+    "babel-core": "^6.3.21",
+    "babel-loader": "^6.2.0",
+    "babel-plugin-transform-runtime": "^6.3.13",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-runtime": "^5.8.34",
+    "css-loader": "^0.23.1",
+    "webpack": "^1.13.1",
+    "style-loader": "^0.13.1"
+  },
+  "keywords": [
+    "htmlparser"
+  ],
+  "author": "para",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/paraofheaven/HTMLParser/issues"
+  },
+  "homepage": "https://github.com/paraofheaven/HTMLParser#readme"
+}
