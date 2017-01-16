@@ -17,18 +17,18 @@ HTMLtoDOM(htmlString,docuement.querySelector(".selector"))
 
 
 	//Regular Expresssions for parsing tags and attributes
-	// 这个正则返回几个参数：
-	// 1：匹配到的完整项
-	// 2：匹配到的第一，第二。。。项（正则中以()划分）
+	// returns:
+	// 1：full regexp object,
+	// 2：the first split object ,the second...(split with "()" );
 	// 3：example: <div class="remain">  div class="remain" ""
 
 	const STARTTAG=/^<([-A-Za-z0-9_]+)((?:\s+\w+(?:\s*=\s*(?:(?:"[^"]*")|(?:'[^']*')|[^>\s]+))?)*)\s*(\/?)>/,
 
-	// 这个正则返回几个参数：
+	// returns:
 	// example: </div> div 
 		ENDTAG =/^<\/([-A-Za-z0-9_]+)[^>]*>/,
 
-	// 这个正则返回几个参数：
+	// returns:
 	// example: class='homeIndex pis' class homeIndex&pis
 		ATTR =/([-A-Za-z0-9_]+)(?:\s*=\s*(?:(?:"((?:\\.|[^"])*)")|(?:'((?:\\.|[^'])*)')|([^>\s]+)))?/g;
 
