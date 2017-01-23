@@ -45,7 +45,7 @@ HTMLtoDOM(htmlString,docuement.querySelector(".selector"))
 	// special Elements that can contain anything
 	const SPECIAL = makeMap("script,style");
 
-	let HTMLParser = window.HTMLParser =(html,handler)=>{
+	let HTMLParser =(html,handler)=>{
 		let index,chars,match,stack =[],last =html;
 		stack.last =()=>{
 			return stack[ stack.length -1];
