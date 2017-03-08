@@ -2,6 +2,7 @@
 HTMLParser By Para Yong
 useage:
 
+test for branch test
 HTMLParser(htmlString,{
 	start:function(tag,attrs,unary){},
 	end:function(tag){},
